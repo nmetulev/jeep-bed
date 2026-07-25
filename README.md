@@ -3,7 +3,7 @@
 A twin bed for a kid, shaped like a lifted Jeep, with a second twin that rolls out
 from underneath. Built from four sheet goods and a stack of construction lumber.
 
-**→ [Open the interactive plans](https://nmetulev.github.io/jeep-bed/)**
+**→ [Open the interactive plans](https://metulev.com/jeep-bed/)**
 
 Everything — the 3D model, six scale blueprints, the cut list, the plywood nesting
 diagrams and the build guide — is generated from one shared set of dimensions, so
