@@ -740,39 +740,50 @@ function P(o) { PARTS.push(o); return o; }
 function buildParts() {
   PARTS = [];
   const legX = [0, D.L - 1.5];              // 0 and 77.5
-  const legZ = [0, D.FRAME_W - 3.5];        // 0 and 37
+  const legZ = [0, D.FRAME_W - 5.5];        // 0 and 35
+  const outX = i => legX[i] + (i ? 0.75 : 0);   // outer 3/4 of the leg footprint
+  const inX = i => legX[i] + (i ? 0 : 0.75);    // inner 3/4
 
   /* ---- 1. MAIN FRAME  (no overlapping members anywhere) ---------------- */
-  // 2x4 corner legs, HOUSED. The top 5.5" is cut back to a 3/4" tongue at the
-  // OUTER face, leaving a shoulder at 14" the end rail sits down onto. The leg
-  // body never moves inboard, so the 76" trundle bay is untouched.
+  // 2x6 corner legs (1.5 x 5.5 on edge), HOUSED. Over the top 5.5" the leg is
+  // cut back from 1.5" to 3/4" thick across its full 5.5" width, leaving a
+  // 3/4" tongue standing at the OUTER face and a 3/4 x 5.5 LIP at y = CLEAR.
+  // The side rail takes 3/4 x 1.5 of that lip, the end rail the other 3/4 x 4.
+  // The leg never moves inboard, so the 76" trundle bay is untouched.
   legX.forEach((x, i) => legZ.forEach((z, j) => {
     P({
       layer: 'frame', kind: 'box', mat: 'black', r: 0.25,
-      size: [1.5, D.CLEAR, 3.5], pos: [x, 0, z],
-      exp: [i ? 5 : -5, -10, j ? 5 : -5], label: '2x4 corner leg - notched, shoulder at 14"',
+      size: [1.5, D.CLEAR, 5.5], pos: [x, 0, z],
+      exp: [i ? 5 : -5, -10, j ? 5 : -5], label: '2x6 corner leg - notched, lip at 14"',
     });
     P({
       layer: 'frame', kind: 'box', mat: 'black', r: 0.2,
-      size: [1.5, D.RAIL_H, 0.75], pos: [x, D.CLEAR, z + (j ? 2.75 : 0)],
-      exp: [i ? 5 : -5, -10, j ? 5 : -5], label: '2x4 corner leg - 3/4" tongue',
+      size: [0.75, D.RAIL_H, 5.5], pos: [outX(i), D.CLEAR, z],
+      exp: [i ? 5 : -5, -10, j ? 5 : -5], label: '2x6 corner leg - 3/4" tongue',
     });
   }));
 
-  // 2x6 side rails butt BETWEEN the legs -> 76" long
+  // 2x6 side rails land on the 3/4 x 1.5 lip and butt the tongues -> 77.5"
   [0, D.FRAME_W - 1.5].forEach((z, i) => P({
     layer: 'frame', kind: 'box', mat: 'pine', r: 0.2,
-    size: [D.INNER_L, D.RAIL_H, 1.5], pos: [1.5, D.CLEAR, z],
+    size: [D.L - 1.5, D.RAIL_H, 1.5], pos: [0.75, D.CLEAR, z],
     exp: [0, 0, i ? 10 : -10], label: '2x6 side rail',
   }));
 
-  // 2x6 end rails run OVER both leg shoulders and die into the 3/4" tongue at
-  // each end -> 39" long. The shoulder carries the load in bearing.
-  legX.forEach((x, i) => P({
-    layer: 'frame', kind: 'box', mat: 'pine2', r: 0.2,
-    size: [1.5, D.RAIL_H, D.FRAME_W - 1.5], pos: [x, D.CLEAR, 0.75],
-    exp: [i ? 12 : -12, 0, 0], label: '2x6 end rail (housed on the leg shoulders)',
-  }));
+  // 2x6 end rails -> 37.5", rebated 3/4 deep x 4" long at each end so the
+  // rebate and the leg tongue together make up the full 1.5" thickness.
+  legX.forEach((x, i) => {
+    P({
+      layer: 'frame', kind: 'box', mat: 'pine2', r: 0.2,
+      size: [0.75, D.RAIL_H, D.FRAME_W - 3], pos: [inX(i), D.CLEAR, 1.5],
+      exp: [i ? 12 : -12, 0, 0], label: '2x6 end rail',
+    });
+    P({
+      layer: 'frame', kind: 'box', mat: 'pine2', r: 0.2,
+      size: [0.75, D.RAIL_H, D.FRAME_W - 11], pos: [outX(i), D.CLEAR, 5.5],
+      exp: [i ? 12 : -12, 0, 0], label: '2x6 end rail - full thickness between the rebates',
+    });
+  });
 
   // 2x2 mattress cleats, inboard of the side rails
   [1.5, D.FRAME_W - 3].forEach((z, i) => P({
@@ -957,7 +968,7 @@ function buildParts() {
 }
 
 const LAYERS = [
-  { id: 'frame',     name: 'Main bed frame',     key: 'pine',     note: '2x6 / 2x4 / 2x2' },
+  { id: 'frame',     name: 'Main bed frame',     key: 'pine',     note: '2x6 legs + rails, 2x2 cleats' },
   { id: 'slats',     name: 'Main slats',         key: 'slat',     note: '14 x 1x4' },
   { id: 'mattress',  name: 'Main mattress',      key: 'mattress', note: '38 x 75 x 12' },
   { id: 'tframe',    name: 'Trundle frame',      key: 'black',    note: '2x4 + casters' },
@@ -1507,7 +1518,7 @@ function figSide() {
 
   // legs + rails (hidden behind the panel)
   [0, D.L - 1.5].forEach(x => s += rect(px(x), py(D.LEG_H), 1.5 * S, D.LEG_H * S, 'bp-leg'));
-  s += rect(px(1.5), py(D.CLEAR + D.RAIL_H), D.INNER_L * S, D.RAIL_H * S, 'bp-part');
+  s += rect(px(0.75), py(D.CLEAR + D.RAIL_H), (D.L - 1.5) * S, D.RAIL_H * S, 'bp-part');
 
   // trundle, tucked
   s += rect(px(2), py(D.T_SLEEP), D.T_MATT_L * S, D.T_MATT_T * S, 'bp-mattress');
@@ -1585,7 +1596,7 @@ function figFront() {
   s += `<line class="bp-ground" x1="${esc(pz(-half + D.FRAME_W / 2))}" y1="${esc(py(0))}" x2="${esc(pz(half + D.FRAME_W / 2))}" y2="${esc(py(0))}"/>`;
 
   // legs
-  [0, D.FRAME_W - 3.5].forEach(z => s += rect(pz(z), py(D.LEG_H), 3.5 * S, D.LEG_H * S, 'bp-leg'));
+  [0, D.FRAME_W - 5.5].forEach(z => s += rect(pz(z), py(D.LEG_H), 5.5 * S, D.LEG_H * S, 'bp-leg'));
   s += rect(pz(0), py(D.CLEAR + D.RAIL_H), D.FRAME_W * S, D.RAIL_H * S, 'bp-part');
   s += rect(pz(2), py(D.SLEEP), 38 * S, D.MATT_T * S, 'bp-mattress');
 
@@ -1640,32 +1651,32 @@ function figFramePlan() {
   const ML = 70, MT = 58, W = ML + D.L * S + 150, H = MT + D.FRAME_W * S + 112;
   const px = x => ML + x * S, pz = z => MT + z * S;
   let s = svgOpen(W, H, 'Fig 3 — Main frame plan (top view)',
-    'Housed corners. The leg is notched; the END rail sits down on the shoulder and the side rails butt between.');
-  // leg footprints - dashed, because the end rail passes over the shoulder
-  [0, D.L - 1.5].forEach(x => [0, D.FRAME_W - 3.5].forEach(z =>
-    s += rect(px(x), pz(z), 1.5 * S, 3.5 * S, 'bp-hidden')));
-  // leg footprints - dashed, because the end rail passes over the shoulder
-  s += rect(px(1.5), pz(0), D.INNER_L * S, 1.5 * S, 'bp-part');
-  s += rect(px(1.5), pz(D.FRAME_W - 1.5), D.INNER_L * S, 1.5 * S, 'bp-part');
-  s += rect(px(0), pz(0.75), 1.5 * S, (D.FRAME_W - 1.5) * S, 'bp-part');
-  s += rect(px(D.L - 1.5), pz(0.75), 1.5 * S, (D.FRAME_W - 1.5) * S, 'bp-part');
-  // the 3/4" tongue left standing at each outer corner
-  [0, D.L - 1.5].forEach(x => [0, D.FRAME_W - 0.75].forEach(z =>
-    s += rect(px(x), pz(z), 1.5 * S, 0.75 * S, 'bp-leg')));
-  // leg footprint, dashed: the end rail passes over the 14" shoulder
-  [0, D.L - 1.5].forEach(x => [0, D.FRAME_W - 3.5].forEach(z =>
-    s += rect(px(x), pz(z), 1.5 * S, 3.5 * S, 'bp-hidden')));
+    'Housed corners. Each 2x6 leg is notched 3/4" deep x 5 1/2" tall, and both rails land on the lip that leaves.');
+  // side rails - 77.5", butting the leg tongues
+  s += rect(px(0.75), pz(0), (D.L - 1.5) * S, 1.5 * S, 'bp-part');
+  s += rect(px(0.75), pz(D.FRAME_W - 1.5), (D.L - 1.5) * S, 1.5 * S, 'bp-part');
+  // end rails - 37.5", rebated 3/4 x 4 at each end
+  [0, D.L - 1.5].forEach((x, i) => {
+    s += rect(px(x + (i ? 0 : 0.75)), pz(1.5), 0.75 * S, (D.FRAME_W - 3) * S, 'bp-part');
+    s += rect(px(x + (i ? 0.75 : 0)), pz(5.5), 0.75 * S, (D.FRAME_W - 11) * S, 'bp-part');
+  });
+  // the 3/4 x 5.5 tongue left standing at each outer corner
+  [0, D.L - 1.5].forEach((x, i) => [0, D.FRAME_W - 5.5].forEach(z =>
+    s += rect(px(x + (i ? 0.75 : 0)), pz(z), 0.75 * S, 5.5 * S, 'bp-leg')));
+  // leg footprint, dashed: everything above sits on the lip at 14"
+  [0, D.L - 1.5].forEach(x => [0, D.FRAME_W - 5.5].forEach(z =>
+    s += rect(px(x), pz(z), 1.5 * S, 5.5 * S, 'bp-hidden')));
   s += rect(px(1.5), pz(1.5), D.INNER_L * S, D.CLEAT * S, 'bp-cleat');
   s += rect(px(1.5), pz(D.FRAME_W - 3), D.INNER_L * S, D.CLEAT * S, 'bp-cleat');
   const nS = 14;
   for (let i = 0; i < nS; i++)
     s += rect(px(1.5 + i * (D.SLAT_W + D.GAP_S)), pz(1.5), D.SLAT_W * S, D.INNER_W * S, 'bp-slat');
   s += dimH(px(0), px(D.L), pz(D.FRAME_W) + 30, inch(D.L));
-  s += dimH(px(1.5), px(D.L - 1.5), pz(D.FRAME_W) + 52, inch(D.INNER_L) + ' side rails');
+  s += dimH(px(0.75), px(D.L - 0.75), pz(D.FRAME_W) + 52, inch(D.L - 1.5) + ' side rails');
   s += dimV(pz(0), pz(D.FRAME_W), ML - 30, inch(D.FRAME_W));
-  s += dimV(pz(0.75), pz(D.FRAME_W - 0.75), ML + D.L * S + 40, inch(D.FRAME_W - 1.5) + ' end rails');
-  s += `<text class="bp-note" x="${esc(ML)}" y="${esc(H - 20)}">14 slats, ${inch(D.GAP_S)} gaps. Side rails 2x6 x ${inch(D.INNER_L)} butt between the end rails; end rails 2x6 x ${inch(D.FRAME_W - 1.5)} run the full width.</text>`;
-  s += `<text class="bp-note" x="${esc(ML)}" y="${esc(H - 2)}">Legs are 2x4 (1.5 x 3.5), notched 3/4" x 5 1/2" at the top: dashed = the shoulder at 14", solid black = the tongue.</text>`;
+  s += dimV(pz(1.5), pz(D.FRAME_W - 1.5), ML + D.L * S + 40, inch(D.FRAME_W - 3) + ' end rails');
+  s += `<text class="bp-note" x="${esc(ML)}" y="${esc(H - 20)}">14 slats, ${inch(D.GAP_S)} gaps. Side rails 2x6 x ${inch(D.L - 1.5)}; end rails 2x6 x ${inch(D.FRAME_W - 3)}, rebated 3/4" deep x 4" long at each end.</text>`;
+  s += `<text class="bp-note" x="${esc(ML)}" y="${esc(H - 2)}">Legs are 2x6 on edge (1.5 x 5.5), notched 3/4" x 5 1/2" at the top: dashed = the lip at 14", solid black = the tongue left standing.</text>`;
   return s + '</svg>';
 }
 
@@ -1863,9 +1874,9 @@ function CUTS() {
   const both = state.wall ? 1 : 2;
   return [
     ['Main frame', [
-      ['Corner leg', '2x4', '19 1/2"', 4, 'Painted black. 1.5 x 3.5 footprint at each corner. NOTCHED: over the TOP 5 1/2", take 2 3/4" of the 3 1/2" width away, leaving a 3/4" tongue standing at what will be the OUTER face. What is left below is a shoulder at 14" that the end rail sits down onto, so the joint carries the bed in bearing and the screws only have to stop it lifting. Cut all four from one router or dado setup — if they do not match, the frame will not sit flat.'],
-      ['Side rail', '2x6', '76"', 2, 'Butts BETWEEN the end rails — flush with the leg outer faces. This is also the entire bolting face for the side panel: a continuous 76 x 5 1/2 of solid pine.'],
-      ['End rail', '2x6', '39"', 2, 'A straight cut, no joinery on the rail itself. It runs the full width over BOTH leg shoulders and dies into the 3/4" tongue at each end.'],
+      ['Corner leg', '2x6 on edge', '19 1/2"', 4, 'Painted black. 1 1/2 x 5 1/2 footprint at each corner. NOTCHED: over the TOP 5 1/2" take the leg from 1 1/2" down to 3/4" thick, across its full 5 1/2" width. That leaves a 3/4" tongue standing at the OUTER face and a 3/4 x 5 1/2 LIP at 14" for the rails to land on — 3/4 x 1 1/2 of it for the side rail, the remaining 3/4 x 4 for the end rail. The lip carries the bed in bearing, so the screws only have to stop it lifting. Cut all four from ONE dado or router setup; if they do not match the frame will not sit flat.'],
+      ['Side rail', '2x6', '77 1/2"', 2, 'No joinery — a straight cut. Each end lands on the 3/4 x 1 1/2 corner of the leg lip and butts the tongue, so it runs 3/4" further at each end than the old butted rail. It is also the entire bolting face for the side panel: a continuous 77 1/2 x 5 1/2 of solid pine.'],
+      ['End rail', '2x6', '37 1/2"', 2, 'REBATED at both ends: 3/4" deep x 4" long, taken off the OUTER face. The rebate drops over the rest of the leg lip and the leg tongue fills the gap, so leg and rail together come out flush at 1 1/2". Cut the rebates with the same setup you used on the legs.'],
       ['Mattress cleat', '2x2', '76"', 2, 'Glue + screw every 8" to the inside face of each MAIN side rail, top edge at 15 1/2".'],
       ['Slat', '1x4', '37 1/2"', 14, inch(D.GAP_S) + ' gaps.'],
     ]],
@@ -1905,16 +1916,15 @@ function CUTS() {
 /* Why the 2x4 count is what it is — an actual cutting plan, not a guess. */
 function BOARDS() {
   const plan = [
-    ['1', '75" trundle side rail  +  19 1/2" leg', 94.5],
-    ['2', '75" trundle side rail  +  19 1/2" leg', 94.5],
+    ['1', '75" trundle side rail  +  2 flare facets', 89.5],
+    ['2', '75" trundle side rail  +  2 flare facets', 89.5],
     ['3', '40 1/2" roof brace  x2  +  2 flare facets', 95.5],
-    ['4', '34" trundle end rail  x2  +  19 1/2" leg  +  1 flare facet', 94.75],
-    ['5', '29 1/2" rock slider / step  +  19 1/2" leg  +  6 flare facets', 92.5],
+    ['4', '34" trundle end rail  x2  +  3 flare facets', 89.75],
   ].concat(state.wall ? [
-    ['6', '1 flare facet — the rest of this board is your spare stock', 7.25],
+    ['5', '29 1/2" rock slider / step  +  1 flare facet — the rest is your spare stock', 36.75],
   ] : [
-    ['6', '1 flare facet  +  29 1/2" step  +  7 more facets  (free-standing side)', 87.5],
-    ['7', '3 flare facets  (free-standing side)', 21.75],
+    ['5', '29 1/2" rock slider / step  +  8 flare facets', 87.5],
+    ['6', '29 1/2" step  +  5 flare facets  (free-standing side)', 65.75],
   ]);
   return plan.map(([n, what, used]) => [n, what, inch(used), inch(Math.round((96 - used) * 100) / 100)]);
 }
@@ -1924,11 +1934,11 @@ function SHOP() {
     ['3/4" birch or sande plywood, 4x8', state.wall ? 3 : 4,
       'Sanded both faces — you are painting it. Each side panel is 79 x 48, i.e. the FULL width of a sheet, so it takes a sheet of its own — but it gives back two 20" tire discs: one from the block above the hood line, one from the door drop-out. That is all 4 discs against a wall, for free — which is why against a wall the whole bed lands on THREE sheets: two panels, then one sheet carrying the rocker band, the tailgate and the grill backer. Free-standing needs a second rocker band and four more discs, and that is what pushes it to a fourth sheet.'],
     ['1/2" MDF, 2 x 4 handy panel', 1, 'The slotted grill face (42 x 20) and the licence plate (20 1/2 x 4 1/2). Lay the face out in one corner of the 24 x 48 panel; that leaves a 6 x 24 strip down the side, and the plate drops into it turned 90 degrees. Cut the seven slots and the two headlight holes with a jigsaw or router — MDF has no voids and no grain to tear, which is exactly what you want for nine cut-outs on a face that ends up 3 feet from your eye. Seal the cut edges with primer before you paint.'],
-    ['2x6 x 8\'', 3, 'Two 76" side rails + two 39" end rails = 230" of cut. Still three boards: one side rail out of each of two, both end rails out of the third.'],
-    ['2x4 x 8\'', state.wall ? 6 : 7,
+    ['2x6 x 8\'', 4, 'The legs moved to 2x6 when the corners became housed joints, so this is now four boards: a 77 1/2" side rail out of each of two, then two 37 1/2" end rails plus a 19 1/2" leg on the third (94 1/2"), and the last three legs on the fourth. 308" of cut in all.'],
+    ['2x4 x 8\'', state.wall ? 5 : 6,
       state.wall
-        ? '479" of cut. Five boards are packed solid and the sixth carries one flare facet, so the rest of it is your spare — deleting the two 44" bumpers is what bought you that. See the cutting plan below.'
-        : '581" of cut across 7 boards; the last one is barely touched, so it doubles as your spare.'],
+        ? '401" of cut. Moving the four legs to 2x6 took a whole board out of this pile — four boards are packed solid and the fifth is barely touched, so it is your spare. See the cutting plan below.'
+        : '503" of cut across 6 boards; the last one is only two thirds used, so it doubles as your spare.'],
     ['2x2 x 8\'', 4, 'Two 76" main cleats + two 72" trundle cleats. One per board — 76" and 72" will not pair up on a 96" stick.'],
     ['1x4 x 8\'', 14, '14 main slats at 37 1/2" + 13 trundle slats at 34", two per board.'],
     ['3 1/2" structural screws', '1 box', 'Frame corners, cleats and slats. Now that the legs are notched the end rail BEARS on the shoulder, so the screws only have to stop it lifting and twisting — which is why there are no longer any 3/8" bolts through the frame corners at all.'],
@@ -1969,8 +1979,8 @@ function NOTES() {
 
 function STEPS() {
   return [
-    ['Cut the frame', 'Four 2x4 legs at 19 1/2". Two 2x6 side rails at 76", two 2x6 end rails at 39". Then notch the legs: over the TOP 5 1/2" of each leg take 2 3/4" of its 3 1/2" width away, leaving a 3/4" tongue standing at the OUTER face. Set the dado stack or router once and run all four in a row. Sand every edge with a 1/4" roundover bit or 80 grit — nothing on this bed should be sharp.'],
-    ['Assemble the box', 'Stand the two legs of one end and drop the 39" end rail into the notches. It should land on both shoulders with its outer face flush with the legs and the two tongues filling the ends. That shoulder is what carries the bed, so glue it, then two 3 1/2" screws down through the rail into each shoulder and two more driven sideways through each tongue. Do the other end the same way, then glue and screw the 76" side rails BETWEEN the two end assemblies. Check the diagonals match before the glue sets.'],
+    ['Cut the frame', 'Four 2x6 legs at 19 1/2", two 2x6 side rails at 77 1/2", two 2x6 end rails at 37 1/2". Now set a dado stack or a router with a straight bit to take exactly 3/4" and DO NOT MOVE IT until every notch is cut. First the legs: over the top 5 1/2" of each, take the thickness from 1 1/2" down to 3/4" across the full 5 1/2" width. Then the end rails: same 3/4" depth, but only 4" long, taken off the OUTER face at each end. Test one leg against one rail end before you cut the rest — together they must come out flush at 1 1/2". Sand every edge with a 1/4" roundover bit or 80 grit; nothing on this bed should be sharp.'],
+    ['Assemble the box', 'Stand the two legs of one end and lower the 37 1/2" end rail so its rebates drop over the leg lips. It should land on the 3/4 x 4 shoulders with the tongues filling the outside, dead flush. That lip is what carries the bed, so glue it, then two 3 1/2" screws down through the rail into each lip and two more driven sideways through each tongue. Do the other end the same way. Each corner now has a 3/4 x 1 1/2 patch of lip still uncovered — that is where the 77 1/2" side rails land. Glue them on, screw down into the lip and sideways into the end rail, and check the diagonals match before anything sets.'],
     ['Cleats and slats', 'Glue and screw the 2x2 cleats to the inside faces of the MAIN side rails, top edge at 15 1/2". Drop in 14 slats with 2 1/16" gaps and screw each one down.'],
     ['Build the trundle', '75 x 37 box of 2x4 on edge, 6 locking casters. Then the important bit: the 13 slats do NOT go on top of the rails. Glue and screw a 72" 2x2 cleat inside each side rail, flush with the BOTTOM edge, and land the slats on that — the deck ends up at ' + inch(D.T_DECK) + ' instead of ' + inch(D.CASTER_H + D.T_RAIL_H + D.SLAT_T) + ', which is what lets an 8" mattress live in the same bay. The 1 1/4" of rail still standing proud of the slats becomes a lip that keeps the mattress aboard when the drawer rolls. Paint the whole thing black now, before it goes under the bed. Roll it in and check you have 1 3/4" of daylight over the mattress.'],
     ['Cut the body panels', 'This is the big one. Each side panel is ONE piece 79 long x 48 tall — the FULL width of a 4x8 sheet, so it takes a sheet of its own and you only cut three sides. Set it out full size from Fig 6: hood deck at ' + inch(D.HOOD) + ' running back to station ' + D.WS_X0 + ', A-pillar raking from (' + D.WS_X0 + ',' + D.HOOD + ') up to (' + D.WS_X1 + ',' + D.ROOF + '), roof rail flat at ' + inch(D.ROOF) + ' to the tail, rear edge straight down. Two openings, both in the SIDE: the doors-off aperture at x' + D.DOOR_X0 + '-' + D.DOOR_X1 + ' and the rear quarter window at x' + (D.DOOR_X1 + D.BPIL_W) + '-' + D.QTR_X + '. Drill 1/2" holes in their corners and jigsaw them out — and KEEP the door drop-out, there is a 20" tire disc in it. Cut ONE panel, clean every edge, then use it as a router template for the second so the pair are identical. Round every outside corner and every opening corner.'],
