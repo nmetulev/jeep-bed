@@ -387,7 +387,7 @@ ol.steps b { color: var(--cp-accent); }
             style="width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid var(--cp-border);
                    border-radius:0.625rem;background:var(--cp-surface);color:var(--cp-text);
                    font:700 14px Consolas,'Courier New',monospace;letter-spacing:2px;text-align:center">
-          <p style="margin:8px 0 0;font-size:11.5px;color:var(--cp-text-soft)">Euro size, 20 1/2 x 4 1/2, low on the grill. Up to 9 characters.</p>
+          <p style="margin:8px 0 0;font-size:11.5px;color:var(--cp-text-soft)">Euro size, 20 1/2 x 4 1/2, slung low off the grill. Up to 9 characters.</p>
         </div>
         <div class="card">
           <h3>Against a wall</h3>
@@ -504,9 +504,10 @@ D.SKIRT_FH = D.SKIRT_H - 2 * D.VENT;              // 12     the band is 12", flo
    real Jeep does, and it stands 1/2" proud of the face. */
 D.PLATE_W = 20.5; D.PLATE_H = 4.5;
 D.PLATE_U0 = (D.BODY_W - D.PLATE_W) / 2;          // 10.75  across the body
-D.PLATE_V0 = 15;                                  // 15-19.5 — sits low, clipping the
-                                                  // bottom of the slots, 1" of black
-                                                  // reveal showing under it
+D.PLATE_V0 = 12.5;                                // 12.5-17 — slung low, the way a
+                                                  // euro plate hangs off a bumper.
+                                                  // Its top 3" bolt to the grill and
+                                                  // the last 1 1/2" hangs below it.
 D.T_SLEEP = D.T_DECK + D.T_MATT_T;                // 12.25  trundle mattress top
 D.WHEEL_Z = D.PLY + D.SPACER + D.TIRE_T;          //  3.75  how far a dressed wheel sticks out
 D.NOSE    = -(D.PLY + D.MDF);                     // -1.25  front face of the grill
@@ -697,12 +698,14 @@ const SHAPES = {
     holes: [roundPath(doorPts()), roundPath(windowPts())],
   }),
 
-  /* solid grill backer — plain rounded rectangle, painted BLACK.  It is what
-     you see through the slots, and it shows as a 1" black reveal all round. */
+  /* solid grill backer — plain rounded rectangle.  The face covers it edge to
+     edge, so the ONLY black you see is what shows through the seven slots and
+     the two headlight holes.  Nothing frames the grill. */
   grillBack: () => ({ outline: rrect(0, D.CLEAR, D.BODY_W, D.HOOD - D.CLEAR, 2.5) }),
 
-  /* slotted grill face — 7 slots + 2 headlights.  1/2" MDF, body colour,
-     set in 1" at the top and both sides so the black backer frames it. */
+  /* slotted grill face — 7 slots + 2 headlights.  1/2" MDF, body colour, and
+     exactly the same outline as the backer, so the grill reads as one solid
+     body-coloured panel with nine real holes punched through it. */
   grillFace: () => {
     const holes = [];
     const n = 7, w = 2.5, span = 24, gap = (span - n * w) / (n - 1);
@@ -716,7 +719,7 @@ const SHAPES = {
       }
       holes.push(seg);
     });
-    return { outline: rrect(1, D.CLEAR, D.BODY_W - 2, D.HOOD - 1 - D.CLEAR, 2.5), holes };
+    return { outline: rrect(0, D.CLEAR, D.BODY_W, D.HOOD - D.CLEAR, 2.5), holes };
   },
 
   /* tailgate — a low footboard only.  It stops at the belt line so the back
@@ -848,7 +851,7 @@ function buildParts() {
   P({
     layer: 'body', kind: 'shape', shape: 'grillFace', mat: 'red', rot: 'xneg',
     depth: D.MDF, pos: [-D.PLY, 0, -D.PLY], exp: [-30, 0, 0],
-    label: 'grill face 40 x 19 — 1/2" MDF, body colour',
+    label: 'grill face 42 x 20 — 1/2" MDF, body colour',
   });
 
   P({
@@ -997,6 +1000,12 @@ scene.add(key);
 const fill = new THREE.DirectionalLight(0xffffff, 0.42);
 fill.position.set(130, 80, -100);
 scene.add(fill);
+/* Nose fill.  The key sits behind and above, so the grill end was reading much
+   darker than the flanks.  Kept almost horizontal so it lifts the nose without
+   putting any light back onto the upward faces. */
+const nose = new THREE.DirectionalLight(0xffffff, 0.3);
+nose.position.set(-140, 40, 40);
+scene.add(nose);
 
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.ShadowMaterial({ opacity: 0.2 }));
 floor.rotation.x = -Math.PI / 2;
@@ -1570,9 +1579,9 @@ function figFront() {
   s += rect(pz(2), py(D.SLEEP), 38 * S, D.MATT_T * S, 'bp-mattress');
 
   // grill backer + slotted face
-  s += rect(pz(-D.PLY), py(D.HOOD), D.BODY_W * S, (D.HOOD - D.CLEAR) * S, 'bp-black');
-  const gf = SHAPES.grillFace();
   const gmap = p => [pz(p[0] - D.PLY), py(p[1])];
+  s += `<path class="bp-black" d="${segsToD(SHAPES.grillBack().outline, gmap)}"/>`;
+  const gf = SHAPES.grillFace();
   s += `<path class="bp-red" fill-rule="evenodd" d="${segsToD(gf.outline, gmap)} ${gf.holes.map(h => segsToD(h, gmap)).join(' ')}"/>`;
 
   // licence plate, bolted to the grill face
@@ -1847,10 +1856,10 @@ function CUTS() {
     ]],
     ['Jeep body — 3/4" plywood', [
       ['SIDE PANEL', '3/4" ply', '79 x 48', 2, 'ONE piece each — a FULL 4\' sheet width, floor-to-roof body in a single cut. Hood line, raked A-pillar, roof rail and rear quarter are all in it. Bottom edge sits at ' + inch(D.CLEAR) + ' (on top of the rocker band), top edge at ' + inch(D.ROOF) + '. Door aperture x' + D.DOOR_X0 + '-' + D.DOOR_X1 + ' (sill ' + inch(D.SILL) + ', head ' + inch(D.WIN_Y1) + '); rear quarter window x' + (D.DOOR_X1 + D.BPIL_W) + '-' + D.QTR_X + ' (' + inch(D.WIN_Y0) + ' to ' + inch(D.WIN_Y1) + ').'],
-      ['Grill backer', '3/4" ply', '42 x 20', 1, 'Solid, painted BLACK. It is the full width of the body and it is what you see through the slots.'],
-      ['Grill face', '1/2" MDF', '40 x 19', 1, '7 slots + 2 headlights, painted BODY COLOUR and glued over the backer set in 1" at the top and both sides, so a 1" black reveal frames it and every slot reads as a real hole. MDF, not ply: no voids, no tearout on nine cut-outs, and it paints to a glass finish.'],
+      ['Grill backer', '3/4" ply', '42 x 20', 1, 'Solid. The face covers it completely, so the only part of it you will ever see is what shows through the nine holes — you only have to paint black behind the slots and the headlights, though it is easier just to roll the whole face of it black and forget about it.'],
+      ['Grill face', '1/2" MDF', '42 x 20', 1, '7 slots + 2 headlights, painted BODY COLOUR and glued over the backer edge to edge — same outline, so nothing frames the grill and the only black on the whole nose is the nine holes. MDF, not ply: no voids, no tearout on nine cut-outs, and it paints to a glass finish.'],
       ['Tailgate', '3/4" ply', '42 x 28', 1, 'Footboard only — the back is open air above 42".'],
-      ['Licence plate', '1/2" MDF', '20 1/2 x 4 1/2', 1, 'European proportions (a real euro plate is 520 x 110 mm), so this is full size. Long and low suits the wide grill far better than a square US plate. It bolts to the grill face at 15"-19 1/2", centred, standing 1/2" proud, clipping the bottom of the slots with about an inch of black reveal showing underneath. Cuts from the 40 x 5 offcut left below the grill face. Round the corners to a 1/2" radius, paint it, then put the name on with vinyl letters or a stencil.'],
+      ['Licence plate', '1/2" MDF', '20 1/2 x 4 1/2', 1, 'European proportions (a real euro plate is 520 x 110 mm), so this is full size. Long and low suits the wide grill far better than a square US plate. It bolts to the grill face at 12 1/2"-17", centred, standing 1/2" proud and slung low so the bottom 1 1/2" hangs clear below the grill, the way a euro plate hangs off a bumper. Two bolts along its top edge into the grill face carry it. Cuts from the 6 x 24 strip left beside the grill face — turn it 90 degrees, MDF has no grain. Round the corners to a 1/2" radius, paint it, then put the name on with vinyl letters or a stencil.'],
       ['Roof brace', '2x4 laid flat', '40 1/2"', 2, 'Windshield header and rear hoop. Laid FLAT — 3 1/2" wide, 1 1/2" thick — tucked up under the top of the roof rail so only 1 1/2" of it hangs in the opening. Flat is right here: the load is horizontal (the braces stop the side panels racking and spreading), and flat gives you 3 1/2" of end grain to spread the two bolts across instead of 1 1/2". The ONLY two parts that cross the bed, and they sit ' + inch(D.ROOF - D.BRACE_H - D.SLEEP) + ' clear of the mattress. Paint them body colour.'],
     ]],
     ['Knock-down hardware — this is what lets it come apart', [
@@ -1894,7 +1903,7 @@ function SHOP() {
   return [
     ['3/4" birch or sande plywood, 4x8', state.wall ? 3 : 4,
       'Sanded both faces — you are painting it. Each side panel is 79 x 48, i.e. the FULL width of a sheet, so it takes a sheet of its own — but it gives back two 20" tire discs: one from the block above the hood line, one from the door drop-out. That is all 4 discs against a wall, for free — which is why against a wall the whole bed lands on THREE sheets: two panels, then one sheet carrying the rocker band, the tailgate and the grill backer. Free-standing needs a second rocker band and four more discs, and that is what pushes it to a fourth sheet.'],
-    ['1/2" MDF, 2 x 4 handy panel', 1, 'The slotted grill face (40 x 19) and the licence plate (20 1/2 x 4 1/2), which comes out of the 40 x 5 strip left underneath it. Cut the seven slots and the two headlight holes with a jigsaw or router — MDF has no voids and no grain to tear, which is exactly what you want for nine cut-outs on a face that ends up 3 feet from your eye. Seal the cut edges with primer before you paint.'],
+    ['1/2" MDF, 2 x 4 handy panel', 1, 'The slotted grill face (42 x 20) and the licence plate (20 1/2 x 4 1/2). Lay the face out in one corner of the 24 x 48 panel; that leaves a 6 x 24 strip down the side, and the plate drops into it turned 90 degrees. Cut the seven slots and the two headlight holes with a jigsaw or router — MDF has no voids and no grain to tear, which is exactly what you want for nine cut-outs on a face that ends up 3 feet from your eye. Seal the cut edges with primer before you paint.'],
     ['2x6 x 8\'', 3, 'Two 76" side rails + two 33 1/2" end rails = 219" of cut. Three boards.'],
     ['2x4 x 8\'', state.wall ? 6 : 7,
       state.wall
@@ -1946,7 +1955,7 @@ function STEPS() {
     ['Cleats and slats', 'Glue and screw the 2x2 cleats to the inside faces of the MAIN side rails, top edge at 15 1/2". Drop in 14 slats with 2 1/16" gaps and screw each one down.'],
     ['Build the trundle', '75 x 37 box of 2x4 on edge, 6 locking casters. Then the important bit: the 13 slats do NOT go on top of the rails. Glue and screw a 72" 2x2 cleat inside each side rail, flush with the BOTTOM edge, and land the slats on that — the deck ends up at ' + inch(D.T_DECK) + ' instead of ' + inch(D.CASTER_H + D.T_RAIL_H + D.SLAT_T) + ', which is what lets an 8" mattress live in the same bay. The 1 1/4" of rail still standing proud of the slats becomes a lip that keeps the mattress aboard when the drawer rolls. Paint the whole thing black now, before it goes under the bed. Roll it in and check you have 1 3/4" of daylight over the mattress.'],
     ['Cut the body panels', 'This is the big one. Each side panel is ONE piece 79 long x 48 tall — the FULL width of a 4x8 sheet, so it takes a sheet of its own and you only cut three sides. Set it out full size from Fig 6: hood deck at ' + inch(D.HOOD) + ' running back to station ' + D.WS_X0 + ', A-pillar raking from (' + D.WS_X0 + ',' + D.HOOD + ') up to (' + D.WS_X1 + ',' + D.ROOF + '), roof rail flat at ' + inch(D.ROOF) + ' to the tail, rear edge straight down. Two openings, both in the SIDE: the doors-off aperture at x' + D.DOOR_X0 + '-' + D.DOOR_X1 + ' and the rear quarter window at x' + (D.DOOR_X1 + D.BPIL_W) + '-' + D.QTR_X + '. Drill 1/2" holes in their corners and jigsaw them out — and KEEP the door drop-out, there is a 20" tire disc in it. Cut ONE panel, clean every edge, then use it as a router template for the second so the pair are identical. Round every outside corner and every opening corner.'],
-    ['Grill', 'Cut the solid backer first. Cut the slotted face second and use the backer as a router template for the outline so both match exactly. Glue and clamp the face to the backer — this pair never comes apart again, it is one sub-assembly. Paint the backer black and the face body colour.'],
+    ['Grill', 'The backer and the face are now the SAME outline, 42 x 20 with 2 1/2" corners, so cut the backer first and use it as a router template for the face and the two are guaranteed to line up. Cut the nine holes in the face only. Paint the backer black — strictly you only need black behind the nine holes, but rolling the whole thing is faster and you will never see the rest. Paint the face body colour. Glue and clamp the two together; this pair never comes apart again, it is one sub-assembly. Because nothing frames the grill, take your time sanding the two edges flush after the glue-up — that seam is the only thing that would give the two layers away.'],
     ['Threaded inserts', 'Do this before anything is painted. Every joint that has to come apart later gets a 1/4"-20 knife-thread insert in the FRAMING and a clearance hole in the PANEL — ' + (state.wall ? 37 : 40) + ' of them, laid out from the schedule in the cut list. Clamp each panel in its final position, drill through the panel into the framing with the clearance bit, then take the panel off, open the frame hole out to the insert pilot size and drive the insert. Two 3/8" dowel pins per panel, glued into the frame only, do the locating. Drilling in place is the whole trick: it guarantees the holes line up, because they were made through each other.'],
     ['Hang the sides', 'The panel bottom edge lands at ' + inch(D.CLEAR) + '. The black band does NOT touch it — the band is only 12" tall and hangs from 1" to 13", so there is a 1" vent slot above it and another below it. Pack the band off the floor with a 1" offcut while you screw it on and it will sit right. Drop each panel onto its two dowel pins and run in its bolts — 2 per leg on 2 legs, 1 top and 1 bottom mid-span on the rail, and (on the outboard side' + (state.wall ? ', or both sides if free-standing' : 's') + ') 3 down into the rocker band. Snug, not gorilla-tight. These panels are the shear web, so if the bed ever feels loose the answer is to check these bolts, not to add more screws. Nothing goes on the inside face: no belt rails, no exposed lumber, just painted plywood facing the mattress.'],
     ['Roof braces', 'Exactly two 2x4 laid FLAT span the bed, both up in the roof rail: one at station ' + D.WS_X1 + ' (the windshield header) and one at station ' + D.QTR_X + ' (the rear hoop). Bolt them through the roof rail of each panel into inserts in their end grain — 2 bolts per end and paint them body colour so they read as roof, not lumber. That is EVERYTHING that crosses over the bed — no cowl rail, no windshield panel, no rear-window panel — and the two braces sit ' + inch(D.WIN_Y1 - D.SLEEP) + ' above the mattress. Fit these before the grill and the tailgate: they are what holds the two panels parallel while you line the ends up.'],
