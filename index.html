@@ -387,7 +387,7 @@ ol.steps b { color: var(--cp-accent); }
             style="width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid var(--cp-border);
                    border-radius:0.625rem;background:var(--cp-surface);color:var(--cp-text);
                    font:700 14px Consolas,'Courier New',monospace;letter-spacing:2px;text-align:center">
-          <p style="margin:8px 0 0;font-size:11.5px;color:var(--cp-text-soft)">On the grill, 12 x 6. Up to 9 characters.</p>
+          <p style="margin:8px 0 0;font-size:11.5px;color:var(--cp-text-soft)">Euro size, 20 1/2 x 4 1/2, low on the grill. Up to 9 characters.</p>
         </div>
         <div class="card">
           <h3>Against a wall</h3>
@@ -455,7 +455,8 @@ const D = {
   ROOF: 62,         // top of the side panel.  Panel bottom is at 14, so the panel
                     // itself is a FULL 48" = 4' sheet width, one piece.
   ROOF_D: 4,           // depth of the roof rail (void top = ROOF - ROOF_D = 58)
-  BRACE_H: 3.5,        // a 2x4 on edge: 1 1/2" thick, 3 1/2" deep
+  BRACE_H: 1.5,        // a 2x4 laid FLAT: 1 1/2" tall, 3 1/2" wide.  Flat, not on
+  BRACE_W: 3.5,        // edge, because the only load is horizontal (see NOTES).
   BELT_D: 0.5,      // belt line -> sill of the rear quarter window
 
   // The cabin is set out symmetrically: a 4" margin behind the A-pillar, the
@@ -497,12 +498,15 @@ D.SLEEP   = D.DECK + D.MATT_T;                    // 28.25  main mattress top
 D.T_DECK  = D.CASTER_H + D.T_CLEAT + D.SLAT_T;    //  4.25  top of trundle slats
 D.SKIRT_FH = D.SKIRT_H - 2 * D.VENT;              // 12     the band is 12", floating in a 14" gap
 
-/* Licence plate — a real US plate is 12 x 6.  It bolts to the grill FACE,
+/* Licence plate — European proportions, 520 x 110 mm, so 20 1/2 x 4 1/2.
+   It bolts to the grill FACE,
    centred, low enough to cover the bottom of the slots the way a plate on a
    real Jeep does, and it stands 1/2" proud of the face. */
-D.PLATE_W = 12; D.PLATE_H = 6;
-D.PLATE_U0 = (D.BODY_W - D.PLATE_W) / 2;          // 15     across the body
-D.PLATE_V0 = 17;                                  // 17-23  height above the floor
+D.PLATE_W = 20.5; D.PLATE_H = 4.5;
+D.PLATE_U0 = (D.BODY_W - D.PLATE_W) / 2;          // 10.75  across the body
+D.PLATE_V0 = 15;                                  // 15-19.5 — sits low, clipping the
+                                                  // bottom of the slots, 1" of black
+                                                  // reveal showing under it
 D.T_SLEEP = D.T_DECK + D.T_MATT_T;                // 12.25  trundle mattress top
 D.WHEEL_Z = D.PLY + D.SPACER + D.TIRE_T;          //  3.75  how far a dressed wheel sticks out
 D.NOSE    = -(D.PLY + D.MDF);                     // -1.25  front face of the grill
@@ -622,7 +626,7 @@ function segsToD(segs, map) {
    quarter.  There is deliberately NO windshield panel and NO rear window
    panel, because those would be cross-body pieces spanning right over the
    mattress at head height.  The only things that cross the bed up top are
-   two 2x4 roof braces, 29 3/4" clear above the sleeping surface.
+   two 2x4 roof braces, 32 1/4" clear above the sleeping surface.
    --------------------------------------------------------------------------- */
 function sidePanelPts() {
   return [
@@ -851,7 +855,7 @@ function buildParts() {
     layer: 'body', kind: 'plate', mat: 'plate', r: 0.25,
     size: [D.MDF, D.PLATE_H, D.PLATE_W],
     pos: [-(D.PLY + 2 * D.MDF), D.PLATE_V0, D.PLATE_U0 - D.PLY],
-    exp: [-38, 0, 0], label: 'licence plate 12 x 6 — 1/2" MDF',
+    exp: [-38, 0, 0], label: 'licence plate 20 1/2 x 4 1/2 (euro) — 1/2" MDF',
   });
 
   /* ---- 7. TAILGATE ----------------------------------------------------- */
@@ -862,13 +866,17 @@ function buildParts() {
 
   /* ---- 8. ROOF BRACES --------------------------------------------------
      The ONLY two parts that cross the bed above the mattress, and they sit
-     at 58 1/2-62" — 30 1/4" clear of the sleeping surface.  They tie the two
+     at 60 1/2-62" — 32 1/4" clear of the sleeping surface.  They are laid FLAT,
+     not on edge: the only load on them is horizontal (stopping the two side
+     panels racking or spreading), so the 3 1/2" dimension wants to be in the
+     horizontal plane.  Flat also gives 3 1/2" of end grain to spread two bolts
+     across, where on edge there is only 1 1/2".  They tie the two
      side panels together at the windshield header and at the rear hoop.
      Painted body colour so they read as part of the roof, not raw lumber. */
   [[D.WS_X1, 'windshield header'], [D.QTR_X, 'rear roof hoop']].forEach(([x, name], i) => P({
     layer: 'cage', kind: 'box', mat: 'red', r: 0.2,
-    size: [1.5, D.BRACE_H, D.FRAME_W], pos: [x, D.ROOF - D.BRACE_H, 0],
-    exp: [0, 22, 0], label: '2x4 ' + name + ' brace 40.5"',
+    size: [D.BRACE_W, D.BRACE_H, D.FRAME_W], pos: [x, D.ROOF - D.BRACE_H, 0],
+    exp: [0, 22, 0], label: '2x4 ' + name + ' brace 40.5" (laid flat)',
   }));
   /* ---- 9. BLACK SKIRTS ------------------------------------------------- */
   if (!state.wall) P({
@@ -942,7 +950,7 @@ const LAYERS = [
   { id: 'tslats',    name: 'Trundle slats',      key: 'slat',     note: '13 x 1x4' },
   { id: 'tmattress', name: 'Trundle mattress',   key: 'mattress', note: '36 x 75 x 6' },
   { id: 'body',      name: 'Jeep body panels',   key: 'red',      note: '3/4" plywood' },
-  { id: 'cage',      name: 'Roof braces',      key: 'red',      note: '2x4, 29 3/4" over the mattress' },
+  { id: 'cage',      name: 'Roof braces',      key: 'red',      note: '2x4 laid flat, 32 1/4" over the mattress' },
   { id: 'blackface', name: 'Rocker skirts',      key: 'black',    note: '79 x 12' },
   { id: 'fenders',   name: 'Fender flares',      key: 'black',    note: '2x4 arches, 3 1/2" proud' },
   { id: 'wheels',    name: 'Tires + hubs',       key: 'tire',     note: '18" x 1.5"' },
@@ -975,15 +983,18 @@ function applyCam() {
   camera.lookAt(target);
 }
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f74, 0.8));
-const key = new THREE.DirectionalLight(0xffffff, 0.8);
+/* Sky term kept low on purpose: the roof braces and the roof rail present broad
+   upward faces, and a strong white sky washed them out until they read as bare
+   wood rather than body colour. */
+scene.add(new THREE.HemisphereLight(0xf2f4f7, 0x8a7f74, 0.42));
+const key = new THREE.DirectionalLight(0xffffff, 0.72);
 key.position.set(-80, 130, 110);
 key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
 const sc = key.shadow.camera;
 sc.left = -120; sc.right = 120; sc.top = 120; sc.bottom = -120; sc.near = 1; sc.far = 380;
 scene.add(key);
-const fill = new THREE.DirectionalLight(0xffffff, 0.3);
+const fill = new THREE.DirectionalLight(0xffffff, 0.42);
 fill.position.set(130, 80, -100);
 scene.add(fill);
 
@@ -1077,8 +1088,8 @@ function drawPlate() {
   if (!_pcv) return;
   const c = _pcv.getContext('2d'), W = _pcv.width, H = _pcv.height, ink = plateInk();
   c.fillStyle = PAINT.plate; c.fillRect(0, 0, W, H);
-  const m = W * 0.035, rr = W * 0.028;
-  c.strokeStyle = ink; c.lineWidth = W * 0.016;
+  const m = H * 0.10, rr = H * 0.18;
+  c.strokeStyle = ink; c.lineWidth = H * 0.05;
   c.beginPath();
   c.moveTo(m + rr, m); c.lineTo(W - m - rr, m); c.quadraticCurveTo(W - m, m, W - m, m + rr);
   c.lineTo(W - m, H - m - rr); c.quadraticCurveTo(W - m, H - m, W - m - rr, H - m);
@@ -1087,9 +1098,9 @@ function drawPlate() {
   c.closePath(); c.stroke();
   const txt = String(state.plate || '').toUpperCase() || ' ';
   const font = n => '700 ' + n + 'px Consolas, "Courier New", monospace';
-  let fs = H * 0.5;
+  let fs = H * 0.62;
   c.font = font(fs);
-  const max = W - 2 * m - W * 0.09, wd = c.measureText(txt).width;
+  const max = W - 2 * m - H * 0.5, wd = c.measureText(txt).width;
   if (wd > max) { fs = fs * max / wd; c.font = font(fs); }
   c.fillStyle = ink; c.textAlign = 'center'; c.textBaseline = 'middle';
   c.fillText(txt, W / 2, H / 2 + fs * 0.04);
@@ -1098,7 +1109,8 @@ function drawPlate() {
 function plateTexture() {
   if (!_pcv) {
     _pcv = document.createElement('canvas');
-    _pcv.width = 768; _pcv.height = 384;
+    _pcv.width = 1024;
+    _pcv.height = Math.max(2, Math.round(1024 * D.PLATE_H / D.PLATE_W));
     _ptex = new THREE.CanvasTexture(_pcv);
     _ptex.anisotropy = 8;
   }
@@ -1492,7 +1504,7 @@ function figSide() {
   s += `<path class="bp-red" fill-rule="evenodd" d="${segsToD(roundPath(sidePanelPts()), map)} ${segsToD(roundPath(doorPts()), map)} ${segsToD(roundPath(windowPts()), map)}"/>`;
 
   // the only two things that cross the bed: the 2x4 roof braces (hidden behind the panel)
-  [D.WS_X1, D.QTR_X].forEach(x => s += rect(px(x), py(D.ROOF), 3.5 * S, D.ROOF_D * S, 'bp-part'));
+  [D.WS_X1, D.QTR_X].forEach(x => s += rect(px(x), py(D.ROOF), D.BRACE_W * S, D.BRACE_H * S, 'bp-hidden'));
 
   // grill + tailgate edges
   s += rect(px(-1.5), py(D.HOOD), 1.5 * S, (D.HOOD - D.CLEAR) * S, 'bp-black');
@@ -1579,7 +1591,7 @@ function figFront() {
   });
   // the two 2x4 roof braces spanning between them — the ONLY parts over the mattress
   s += rect(pz(0), py(D.ROOF), D.FRAME_W * S, D.BRACE_H * S, 'bp-red');
-  s += `<text class="bp-note" x="${esc(pz(D.FRAME_W) + 16)}" y="${esc(py(D.ROOF - D.BRACE_H / 2) + 4)}">2x4 on edge, roof brace (2 off)</text>`;
+  s += `<text class="bp-note" x="${esc(pz(D.FRAME_W) + 16)}" y="${esc(py(D.ROOF - D.BRACE_H / 2) + 4)}">2x4 laid flat, roof brace (2 off)</text>`;
   s += `<text class="bp-note" x="${esc(pz(D.FRAME_W) + 16)}" y="${esc(py(D.ROOF - D.BRACE_H / 2) + 20)}">nothing else crosses the bed</text>`;
   s += `<text class="bp-note" x="${esc(pz(D.FRAME_W) + 16)}" y="${esc(py(D.WIN_Y0) + 4)}">side panels beyond (dashed)</text>`;
 
@@ -1838,14 +1850,14 @@ function CUTS() {
       ['Grill backer', '3/4" ply', '42 x 20', 1, 'Solid, painted BLACK. It is the full width of the body and it is what you see through the slots.'],
       ['Grill face', '1/2" MDF', '40 x 19', 1, '7 slots + 2 headlights, painted BODY COLOUR and glued over the backer set in 1" at the top and both sides, so a 1" black reveal frames it and every slot reads as a real hole. MDF, not ply: no voids, no tearout on nine cut-outs, and it paints to a glass finish.'],
       ['Tailgate', '3/4" ply', '42 x 28', 1, 'Footboard only — the back is open air above 42".'],
-      ['Licence plate', '1/2" MDF', '12 x 6', 1, 'The real thing is 12 x 6, so this is full size. It bolts to the grill face at 17"-23", centred, standing 1/2" proud — same place a plate sits on a real Jeep, covering the bottom of the middle slots. Cuts from the offcut of the grill-face panel. Round the corners to a 1/2" radius, paint it, then put the name on with vinyl letters or a stencil.'],
-      ['Roof brace', '2x4 on edge', '40 1/2"', 2, 'Windshield header and rear hoop — an ordinary 2x4 laid on edge, 1 1/2" thick and 3 1/2" deep, set flush with the top of the roof rail so it reads as roof. The ONLY two parts that cross the bed, and they sit ' + inch(D.WIN_Y1 - D.SLEEP) + ' clear of the mattress. Paint them body colour.'],
+      ['Licence plate', '1/2" MDF', '20 1/2 x 4 1/2', 1, 'European proportions (a real euro plate is 520 x 110 mm), so this is full size. Long and low suits the wide grill far better than a square US plate. It bolts to the grill face at 15"-19 1/2", centred, standing 1/2" proud, clipping the bottom of the slots with about an inch of black reveal showing underneath. Cuts from the 40 x 5 offcut left below the grill face. Round the corners to a 1/2" radius, paint it, then put the name on with vinyl letters or a stencil.'],
+      ['Roof brace', '2x4 laid flat', '40 1/2"', 2, 'Windshield header and rear hoop. Laid FLAT — 3 1/2" wide, 1 1/2" thick — tucked up under the top of the roof rail so only 1 1/2" of it hangs in the opening. Flat is right here: the load is horizontal (the braces stop the side panels racking and spreading), and flat gives you 3 1/2" of end grain to spread the two bolts across instead of 1 1/2". The ONLY two parts that cross the bed, and they sit ' + inch(D.ROOF - D.BRACE_H - D.SLEEP) + ' clear of the mattress. Paint them body colour.'],
     ]],
     ['Knock-down hardware — this is what lets it come apart', [
       ['Panel to leg', '1/4"-20 insert + bolt', '2" bolt', 8, '2 per leg, 4 legs. These carry the racking load, so they go near the top and bottom of each leg, not in the middle.'],
       ['Panel to side rail', '1/4"-20 insert + bolt', '2" bolt', 2 * 2, 'One mid-span top and bottom, between the legs.'],
       ['Panel to rocker band', '1/4"-20 insert + bolt', '2" bolt', state.wall ? 3 : 6, '3 per band. The band stays screwed to the frame; the panel bolts down onto it.'],
-      ['Roof brace ends', '1/4"-20 insert + bolt', '2 1/2" bolt', 8, '2 per end, 2 ends, 2 braces. Inserts go in the END GRAIN of the 2x4 — drill deep and use a knife-thread insert, not a slotted one.'],
+      ['Roof brace ends', '1/4"-20 insert + bolt', '2 1/2" bolt', 8, '2 per end, 2 ends, 2 braces. Inserts go in the END GRAIN of the 2x4, side by side across the 3 1/2" width with about 2" between them — that spacing is what stops the brace pivoting. Drill deep and use a knife-thread insert, not a slotted one.'],
       ['Grill to panel', '1/4"-20 insert + bolt', '2" bolt', 6, '3 per side. The grill is what squares the nose, so it is a structural joint, not trim. Inserts go in the plywood EDGE of the grill backer — 3/4" ply takes a 1/4" insert fine if you drill straight.'],
       ['Tailgate to panel', '1/4"-20 insert + bolt', '2" bolt', 6, '3 per side.'],
       ['Alignment dowel', '3/8" x 1 1/2" fluted', '—', 8, '2 per panel. Glued into the frame, running in a clearance hole in the panel. The panel drops onto them and locates itself, so the bolts are not doing the alignment and never end up in shear against an oversized hole.'],
@@ -1882,7 +1894,7 @@ function SHOP() {
   return [
     ['3/4" birch or sande plywood, 4x8', state.wall ? 3 : 4,
       'Sanded both faces — you are painting it. Each side panel is 79 x 48, i.e. the FULL width of a sheet, so it takes a sheet of its own — but it gives back two 20" tire discs: one from the block above the hood line, one from the door drop-out. That is all 4 discs against a wall, for free — which is why against a wall the whole bed lands on THREE sheets: two panels, then one sheet carrying the rocker band, the tailgate and the grill backer. Free-standing needs a second rocker band and four more discs, and that is what pushes it to a fourth sheet.'],
-    ['1/2" MDF, 2 x 4 handy panel', 1, 'The slotted grill face (40 x 19) and the licence plate (12 x 6), which comes out of the offcut. Cut the seven slots and the two headlight holes with a jigsaw or router — MDF has no voids and no grain to tear, which is exactly what you want for nine cut-outs on a face that ends up 3 feet from your eye. Seal the cut edges with primer before you paint.'],
+    ['1/2" MDF, 2 x 4 handy panel', 1, 'The slotted grill face (40 x 19) and the licence plate (20 1/2 x 4 1/2), which comes out of the 40 x 5 strip left underneath it. Cut the seven slots and the two headlight holes with a jigsaw or router — MDF has no voids and no grain to tear, which is exactly what you want for nine cut-outs on a face that ends up 3 feet from your eye. Seal the cut edges with primer before you paint.'],
     ['2x6 x 8\'', 3, 'Two 76" side rails + two 33 1/2" end rails = 219" of cut. Three boards.'],
     ['2x4 x 8\'', state.wall ? 6 : 7,
       state.wall
@@ -1904,14 +1916,14 @@ function SHOP() {
     ['Twin mattress 36 x 75 x 8', 1, 'Trundle. 8" is the ceiling — measure the one you buy WITH its cover on, because foam mattresses often run over their stated thickness, and this one has to clear the main rails by 1 3/4" to roll.'],
     ['Primer + paint', '1 qt each colour', 'Body colour, black, and clear on any bare pine.'],
     ['Anti-tip strap / L-brackets', 2, 'Into studs. Non-negotiable.'],
-    ['Vinyl letters or a stencil', '1 set', '2 1/2" to 3" caps for the name on the licence plate. Vinyl is the easy way and it peels off cleanly if he outgrows it; a stencil and a rattle can is more permanent.'],
+    ['Vinyl letters or a stencil', '1 set', '2 1/2" caps for the name on the licence plate. Vinyl is the easy way and it peels off cleanly if he outgrows it; a stencil and a rattle can is more permanent.'],
   ];
 }
 
 function NOTES() {
   return [
     ['Sleep height', inch(D.SLEEP), 'Deck at ' + inch(D.DECK) + ' plus a 12" mattress. Easy to sit on, easy to make.'],
-    ['Nothing crosses the bed', inch(D.ROOF - D.ROOF_D - D.SLEEP) + ' clear', 'There is no windshield panel and no rear window panel, because a cross-body part at that height would sit directly over the mattress. The whole Jeep shape lives in the two side panels. The only members spanning the bed above the sleeper are the two 2x4 roof braces, and they are ' + inch(D.ROOF - D.BRACE_H - D.SLEEP) + ' above the mattress top.'],
+    ['Nothing crosses the bed', inch(D.ROOF - D.BRACE_H - D.SLEEP) + ' clear', 'There is no windshield panel and no rear window panel, because a cross-body part at that height would sit directly over the mattress. The whole Jeep shape lives in the two side panels. The only members spanning the bed above the sleeper are the two 2x4 roof braces, and they are ' + inch(D.ROOF - D.BRACE_H - D.SLEEP) + ' above the mattress top.'],
     ['Guard above the mattress', inch(D.WIN_Y0 - D.SLEEP), 'Behind the B-pillar the panel is solid from the mattress top up to the quarter-window sill at ' + inch(D.WIN_Y0) + ' — well past the 5" CPSC asks for. Across the door aperture there is none, by design.'],
     ['Door aperture', inch(D.DOOR_X1 - D.DOOR_X0) + ' x ' + inch(D.WIN_Y1 - D.SILL), 'Doors-off Jeep: the door and its window are ONE opening, x' + D.DOOR_X0 + '-' + D.DOOR_X1 + ', from a ' + inch(D.SILL) + ' sill up to ' + inch(D.WIN_Y1) + '. The sill is ' + inch(D.SLEEP - D.SILL) + ' below the mattress top, so the middle of that side is open — deliberately, because that is what makes it read as a Jeep. Wall side goes against the wall. If you ever want the open side guarded, a drop-in 2x4 rail pinned between the A-pillar and the B-pillar at about ' + inch(D.SLEEP + 6) + ' retro-fits in an afternoon.'],
     ['Rear quarter window', inch(D.QTR_X - D.DOOR_X1 - D.BPIL_W) + ' x ' + inch(D.WIN_Y1 - D.WIN_Y0), 'The second opening, behind a ' + inch(D.BPIL_W) + ' B-pillar. Sill at ' + inch(D.WIN_Y0) + ', which is ' + inch(D.WIN_Y0 - D.SLEEP) + ' above the mattress — solid ply guards the whole head end.'],
@@ -1937,11 +1949,11 @@ function STEPS() {
     ['Grill', 'Cut the solid backer first. Cut the slotted face second and use the backer as a router template for the outline so both match exactly. Glue and clamp the face to the backer — this pair never comes apart again, it is one sub-assembly. Paint the backer black and the face body colour.'],
     ['Threaded inserts', 'Do this before anything is painted. Every joint that has to come apart later gets a 1/4"-20 knife-thread insert in the FRAMING and a clearance hole in the PANEL — ' + (state.wall ? 37 : 40) + ' of them, laid out from the schedule in the cut list. Clamp each panel in its final position, drill through the panel into the framing with the clearance bit, then take the panel off, open the frame hole out to the insert pilot size and drive the insert. Two 3/8" dowel pins per panel, glued into the frame only, do the locating. Drilling in place is the whole trick: it guarantees the holes line up, because they were made through each other.'],
     ['Hang the sides', 'The panel bottom edge lands at ' + inch(D.CLEAR) + '. The black band does NOT touch it — the band is only 12" tall and hangs from 1" to 13", so there is a 1" vent slot above it and another below it. Pack the band off the floor with a 1" offcut while you screw it on and it will sit right. Drop each panel onto its two dowel pins and run in its bolts — 2 per leg on 2 legs, 1 top and 1 bottom mid-span on the rail, and (on the outboard side' + (state.wall ? ', or both sides if free-standing' : 's') + ') 3 down into the rocker band. Snug, not gorilla-tight. These panels are the shear web, so if the bed ever feels loose the answer is to check these bolts, not to add more screws. Nothing goes on the inside face: no belt rails, no exposed lumber, just painted plywood facing the mattress.'],
-    ['Roof braces', 'Exactly two 2x4 on edge span the bed, both up in the roof rail: one at station ' + D.WS_X1 + ' (the windshield header) and one at station ' + D.QTR_X + ' (the rear hoop). Bolt them through the roof rail of each panel into inserts in their end grain — 2 bolts per end and paint them body colour so they read as roof, not lumber. That is EVERYTHING that crosses over the bed — no cowl rail, no windshield panel, no rear-window panel — and the two braces sit ' + inch(D.WIN_Y1 - D.SLEEP) + ' above the mattress. Fit these before the grill and the tailgate: they are what holds the two panels parallel while you line the ends up.'],
+    ['Roof braces', 'Exactly two 2x4 laid FLAT span the bed, both up in the roof rail: one at station ' + D.WS_X1 + ' (the windshield header) and one at station ' + D.QTR_X + ' (the rear hoop). Bolt them through the roof rail of each panel into inserts in their end grain — 2 bolts per end and paint them body colour so they read as roof, not lumber. That is EVERYTHING that crosses over the bed — no cowl rail, no windshield panel, no rear-window panel — and the two braces sit ' + inch(D.WIN_Y1 - D.SLEEP) + ' above the mattress. Fit these before the grill and the tailgate: they are what holds the two panels parallel while you line the ends up.'],
     ['Front and back', 'Bolt the grill assembly across the nose, 3 bolts per side — it is a full 42 x 20 and it is what ties the two side panels together at the front now that there is no bumper, so get it square before you drill. Tailgate on the tail, 3 bolts per side; the back stays open above ' + inch(D.BELT) + ' so it does not feel like a box.'],
     ['Flares, step and wheels', 'Build each flare from 5 lengths of 2x4 cut to 7 1/4" blanks and mitred 18 degrees on both ends (Fig 6). Lay them on the NARROW face so the finished arch stands 3 1/2" proud — glue and pocket-screw them into an arch on the bench, sand the outer face flat, paint black. Screw each arch to the SIDE PANEL, not the trundle, centred on station ' + D.AXLE_F + ' and station ' + D.AXLE_R + ', springing off the panel bottom edge at ' + inch(D.FEND_Y) + '. Then run the 29" rock slider between the two arches at the same projection: front flare, step, rear flare become one continuous black band, and its top face is a 3 1/2" tread at ' + inch(D.FEND_Y) + ' — that is the step into the bed, so glue AND screw it into blocking behind the panel, do not rely on the panel alone. Before the flare goes on, paint the panel BLACK inside the arch line, from the arch down to the top of the step — that black area is what makes it read as a wheel opening cut into the body. Laminate two 20" discs per tire and bolt each one through a 6x6 spacer to the BLACK FACE PLATE, not to the side panel: on the trundle side the wheels then roll out with the drawer, which is the only way a 20" wheel and a rolling trundle can share the same 14" band. Axle height ' + inch(D.AXLE_Y) + ' leaves 1/2" of daylight under the tire so nothing drags. Shim the flare and step out 1/4" on the trundle side so the face plate slides past without rubbing.'],
     ['Paint', 'Prime everything. Body colour on the side panels, grill FACE, tailgate and roof braces. Black on the grill BACKER, the wheel openings, flares, step, tires, skirts, legs and trundle. Two coats, sand between.'],
-    ['Licence plate', 'Cut the 12 x 6 blank from the MDF offcut, round the corners to 1/2" and paint it. Put the name on last, once the paint is properly hard — vinyl caps or a stencil. Two bolts through into the grill face, centred, bottom edge at 17". Mount it AFTER the grill is on the bed, so you can eyeball it against the slots rather than measuring.'],
+    ['Licence plate', 'Cut the 20 1/2 x 4 1/2 blank from the MDF offcut, round the corners to 1/2" and paint it. Put the name on last, once the paint is properly hard — vinyl caps or a stencil. Two bolts through into the grill face, centred, bottom edge at 15". Mount it AFTER the grill is on the bed, so you can eyeball it against the slots rather than measuring.'],
     ['Anchor it', 'Two L-brackets or a pair of anti-tip straps into studs. Then load the mattresses.'],
     ['Taking it apart again', 'Reverse order: tailgate, grill, roof braces, then the two side panels lift straight off the dowels. The frame stays bolted as one box and goes through a door on its side; the two panels are 79 x 48 flat boards. Keep the bolts in a labelled bag taped inside the trundle — and if an insert ever spins in its hole, back it out, fill with epoxy and a hardwood plug, and redrill. Do not chase it with a bigger screw.'],
   ];
