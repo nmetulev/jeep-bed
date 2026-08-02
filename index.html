@@ -476,7 +476,7 @@ const D = {
   CLEAR: 14,        // floor -> underside of main side rails (trundle bay)
   RAIL_H: 5.5,      // 2x6 side rail
   CLEAT: 1.5,       // 2x2 cleat
-  SLAT_T: 0.75, SLAT_W: 3.5,
+  SLAT_T: 0.75, SLAT_W: 2.5,   // 1x3 pine, laid flat
   MATT_T: 12,       // main mattress thickness  (was 8)
   LEG_H: 19.5,      // corner leg length = CLEAR + RAIL_H
 
@@ -824,13 +824,13 @@ function buildParts() {
   }));
 
   /* ---- 2. MAIN SLATS --------------------------------------------------- */
-  const nS = 14, gapS = (D.INNER_L - nS * D.SLAT_W) / (nS - 1);
+  const nS = 17, gapS = (D.INNER_L - nS * D.SLAT_W) / (nS - 1);
   D.GAP_S = gapS;
   for (let i = 0; i < nS; i++) P({
     layer: 'slats', kind: 'box', mat: 'slat', r: 0.12,
     size: [D.SLAT_W, D.SLAT_T, D.INNER_W],
     pos: [1.5 + i * (D.SLAT_W + gapS), D.CLEAR + D.CLEAT, 1.5],
-    exp: [0, 14, 0], label: '1x4 slat',
+    exp: [0, 14, 0], label: '1x3 slat',
   });
 
   /* ---- 3. MAIN MATTRESS ------------------------------------------------ */
@@ -876,13 +876,13 @@ function buildParts() {
     exp: [i ? 10 : -10, 0, 0], label: 'trundle end plate 36 x 6 — 3/4" ply',
   }));
 
-  const nT = 11, gapT = (D.T_L - 12 - nT * D.SLAT_W) / (nT + 1);
+  const nT = 13, gapT = (D.T_L - 12 - nT * D.SLAT_W) / (nT + 1);
   D.GAP_T = gapT;
   for (let i = 0; i < nT; i++) P({
     layer: 'tslats', kind: 'box', mat: 'slat', moves: true, r: 0.12,
     size: [D.SLAT_W, D.SLAT_T, D.T_INNER],
     pos: [tx + 6 + gapT + i * (D.SLAT_W + gapT), D.CASTER_H + D.T_CLEAT, tz + 1.5],
-    exp: [0, 8, 0], label: '1x4 trundle slat',
+    exp: [0, 8, 0], label: '1x3 trundle slat',
   });
 
   P({
@@ -1006,10 +1006,10 @@ function buildParts() {
 
 const LAYERS = [
   { id: 'frame',     name: 'Main bed frame',     key: 'pine',     note: '2x6 legs + rails, 2x2 cleats' },
-  { id: 'slats',     name: 'Main slats',         key: 'slat',     note: '14 x 1x4' },
+  { id: 'slats',     name: 'Main slats',         key: 'slat',     note: '17 x 1x3' },
   { id: 'mattress',  name: 'Main mattress',      key: 'mattress', note: '38 x 75 x 12' },
   { id: 'tframe',    name: 'Trundle frame',      key: 'black',    note: '2x4 rails + casters' },
-  { id: 'tslats',    name: 'Trundle slats',      key: 'slat',     note: '11 x 1x4 + 2 ply end plates' },
+  { id: 'tslats',    name: 'Trundle slats',      key: 'slat',     note: '13 x 1x3 + 2 ply end plates' },
   { id: 'tmattress', name: 'Trundle mattress',   key: 'mattress', note: '36 x 75 x 8' },
   { id: 'body',      name: 'Jeep body panels',   key: 'red',      note: '3/4" plywood' },
   { id: 'cage',      name: 'Roof braces',      key: 'red',      note: '2x4 laid flat, 32 1/4" over the mattress' },
@@ -1705,14 +1705,14 @@ function figFramePlan() {
     s += rect(px(x), pz(z), 1.5 * S, 5.5 * S, 'bp-hidden')));
   s += rect(px(1.5), pz(1.5), D.INNER_L * S, D.CLEAT * S, 'bp-cleat');
   s += rect(px(1.5), pz(D.FRAME_W - 3), D.INNER_L * S, D.CLEAT * S, 'bp-cleat');
-  const nS = 14;
+  const nS = 17;
   for (let i = 0; i < nS; i++)
     s += rect(px(1.5 + i * (D.SLAT_W + D.GAP_S)), pz(1.5), D.SLAT_W * S, D.INNER_W * S, 'bp-slat');
   s += dimH(px(0), px(D.L), pz(D.FRAME_W) + 30, inch(D.L));
   s += dimH(px(0.75), px(D.L - 0.75), pz(D.FRAME_W) + 52, inch(D.L - 1.5) + ' side rails');
   s += dimV(pz(0), pz(D.FRAME_W), ML - 30, inch(D.FRAME_W));
   s += dimV(pz(1.5), pz(D.FRAME_W - 1.5), ML + D.L * S + 40, inch(D.FRAME_W - 3) + ' end rails');
-  s += `<text class="bp-note" x="${esc(ML)}" y="${esc(H - 20)}">14 slats, ${inch(D.GAP_S)} gaps. Side rails 2x6 x ${inch(D.L - 1.5)}; end rails 2x6 x ${inch(D.FRAME_W - 3)}, rebated 3/4" deep x 4" long at each end.</text>`;
+  s += `<text class="bp-note" x="${esc(ML)}" y="${esc(H - 20)}">17 slats of 1x3, ${inch(D.GAP_S)} gaps. Side rails 2x6 x ${inch(D.L - 1.5)}; end rails 2x6 x ${inch(D.FRAME_W - 3)}, rebated 3/4" deep x 4" long at each end.</text>`;
   s += `<text class="bp-note" x="${esc(ML)}" y="${esc(H - 2)}">Legs are 2x6 on edge (1.5 x 5.5), notched 3/4" x 5 1/2" at the top: dashed = the lip at 14", solid black = the tongue left standing.</text>`;
   return s + '</svg>';
 }
@@ -1726,7 +1726,7 @@ function figTrundlePlan() {
   s += rect(px(0), pz(D.T_W - 1.5), D.T_L * S, 1.5 * S, 'bp-black');
   s += rect(px(0), pz(1.5), 6 * S, D.T_INNER * S, 'bp-part');
   s += rect(px(D.T_L - 6), pz(1.5), 6 * S, D.T_INNER * S, 'bp-part');
-  const nT = 11;
+  const nT = 13;
   for (let i = 0; i < nT; i++)
     s += rect(px(6 + D.GAP_T + i * (D.SLAT_W + D.GAP_T)), pz(1.5), D.SLAT_W * S, D.T_INNER * S, 'bp-slat');
   [3, D.T_L / 2 - 1, D.T_L - 5].forEach(x => [0.25, D.T_W - 2.25].forEach(z =>
@@ -1772,7 +1772,7 @@ function figSection() {
     s += rect(pz(z), py(D.CASTER_H + D.T_RAIL_H), 1.5 * S, D.T_RAIL_H * S, 'bp-black'));
   s += `<text class="bp-note" x="${esc(pz(D.FRAME_W) + 12)}" y="${esc(py((D.CLEAR + D.T_SLEEP) / 2) + 4)}">${inch(D.CLEAR - D.T_SLEEP)} clearance</text>`;
   s += `<text class="bp-note" x="${esc(pz(D.FRAME_W) + 12)}" y="${esc(py(D.T_SLEEP / 2) + 4)}">trundle: 8" mattress, slats dropped inside the rails</text>`;
-  s += `<text class="bp-note" x="${esc(pz(D.FRAME_W) + 12)}" y="${esc(py(D.SLEEP - D.MATT_T / 2) + 4)}">main: 12" mattress on 1x4 slats</text>`;
+  s += `<text class="bp-note" x="${esc(pz(D.FRAME_W) + 12)}" y="${esc(py(D.SLEEP - D.MATT_T / 2) + 4)}">main: 12" mattress on 1x3 slats</text>`;
   s += dimV(py(0), py(D.CLEAR), ML - 40, inch(D.CLEAR) + ' bay');
   s += dimV(py(0), py(D.SLEEP), ML - 76, inch(D.SLEEP) + ' sleep');
   s += dimV(py(D.SLEEP), py(D.WIN_Y0), pz(D.FRAME_W) + 56, inch(D.WIN_Y0 - D.SLEEP) + ' guard');
@@ -1921,12 +1921,12 @@ function CUTS() {
       ['Side rail', '2x6', '77 1/2"', 2, 'No joinery — a straight cut. Each end lands on the 3/4 x 1 1/2 corner of the leg lip and butts the tongue, so it runs 3/4" further at each end than the old butted rail. It is also the entire bolting face for the side panel: a continuous 77 1/2 x 5 1/2 of solid pine.'],
       ['End rail', '2x6', '38 1/2"', 2, 'REBATED at both ends: 3/4" deep x 4" long, taken off the OUTER face. The rebate drops over the rest of the leg lip and the leg tongue fills the gap, so leg and rail together come out flush at 1 1/2". Cut the rebates with the same setup you used on the legs.'],
       ['Mattress cleat', '2x2', '76"', 2, 'Glue + screw every 8" to the inside face of each MAIN side rail, top edge at 15 1/2".'],
-      ['Slat', '1x4', '38 1/2"', 14, inch(D.GAP_S) + ' gaps.'],
+      ['Slat', '1x3', '38 1/2"', 17, inch(D.GAP_S) + ' gaps.'],
     ]],
     ['Trundle (all painted black)', [
       ['Trundle side rail', '2x4 on edge', '75"', 2, 'Full length. There is no end rail to butt into, so this is a straight cut.'],
       ['Trundle end plate', '3/4" ply', '36 x 6', 2, 'This replaces the 2x4 end rails. It lies IN the slat plane, not standing at the end, so it takes no length off the mattress bay — which is the only reason a full 75" twin fits a 75" trundle. Screwed the whole 36" into both cleats it is stiffer in racking than the 2x4 it replaces. Cut both from the offcut beside the rocker bands.'],
-      ['Trundle slat', '1x4', '36"', 11, inch(D.GAP_T) + ' gaps.'],
+      ['Trundle slat', '1x3', '36"', 13, inch(D.GAP_T) + ' gaps.'],
       ['Locking caster', '2" plate', '—', 6, '3 per side. At least 2 must lock.'],
     ]],
     ['Jeep body — 3/4" plywood', [
@@ -1982,7 +1982,7 @@ function SHOP() {
         ? '335" of cut. Deleting the trundle end rails took another board out of this pile: three are packed solid and the fourth is two thirds used. See the cutting plan below.'
         : '437" of cut across 5 boards; the last one is flare facets only, so it doubles as your spare.'],
     ['2x2 x 8\'', 4, 'Two 76" main cleats + two 75" trundle cleats — the trundle cleats now run the full length of the rail. One per board; they will not pair up on a 96" stick.'],
-    ['1x4 x 8\'', 14, '14 main slats at 38 1/2" + 11 trundle slats at 36", two per board.'],
+    ['1x3 x 8\'', 15, '17 main slats at 38 1/2" + 13 trundle slats at 36", two per board — nothing longer than 38 1/2" will pair three to a 96" stick.'],
     ['3 1/2" structural screws', '1 box', 'Frame corners, cleats and slats. Now that the legs are notched the end rail BEARS on the shoulder, so the screws only have to stop it lifting and twisting — which is why there are no longer any 3/8" bolts through the frame corners at all.'],
     ['1/4"-20 knife-thread threaded inserts', 50,
       (state.wall ? '40' : '44') + ' bolted joints in the schedule, buy 50. Knife-thread (E-Z Lok style) driven with a hex key, NOT the slotted flanged kind — those strip out of pine. Drill the pilot exactly to the spec on the packet and drive them square.'],
@@ -2014,7 +2014,7 @@ function NOTES() {
     ['Trundle headroom', inch(D.CLEAR - D.T_SLEEP), 'Between the trundle mattress and the underside of the main rails — unchanged, even though the mattress went from 6" to 8". Dropping the trundle slats onto cleats INSIDE the 2x4 rails, instead of laying them on top, lowers the deck from ' + inch(D.CASTER_H + D.T_RAIL_H + D.SLAT_T) + ' to ' + inch(D.T_DECK) + '. That is exactly the 2" the thicker mattress needs, so nothing else in the bed moved.'],
     ['Trundle ventilation', '1" top + 1" bottom', 'The black band is 12" tall in a 14" gap, so it floats: 1" clear of the floor and 1" below the panel. Combined with the open nose and tail, air crosses the bay in both directions instead of sitting still under a foam mattress in a closed box. The bottom gap disappears into the shadow line under the tires; the top one reads as the body/rocker shadow gap a real Jeep has anyway.'],
     ['Overall', inch(D.OAL) + ' x ' + inch(D.stance()) + ' x ' + inch(D.ROOF), 'Measure your doorway AND your ceiling. The body is ' + inch(D.ROOF) + ' tall and each side panel is a 79 x 48 sheet of ply that has to go into the room flat.'],
-    ['Slat span', '38 1/2"', '14 slats of 1x4 pine laid flat, 2.08" gaps. Under a 250 lb load that deflects about 0.58" — fine for a child, noticeable for an adult sitting on the edge. No centre beam is possible: the trundle mattress top is at ' + inch(D.T_SLEEP) + ' and the cleat top is at 15 1/2", so there is only 3 1/4" of headroom and any beam deep enough to help would foul the trundle. If you want a stiffer deck, swap the 1x4s for 5/4 decking (1" actual) — stiffness goes as thickness cubed, so it more than doubles for about $25. Keep the gaps under 3" whatever you use.'],
+    ['Slat span', '38 1/2"', '17 slats of 1x3 pine laid flat, ' + inch(D.GAP_S) + ' gaps. A 1x3 is 2 1/2" wide against a 1x4\'s 3 1/2", so three extra slats go in to put nearly the same total width of timber over the span. Under a 250 lb load that deflects about 0.67" — fine for a child, noticeable for an adult sitting on the edge. No centre beam is possible: the trundle mattress top is at ' + inch(D.T_SLEEP) + ' and the cleat top is at 15 1/2", so there is only 3 1/4" of headroom and any beam deep enough to help would foul the trundle. If you want a stiffer deck, swap the 1x3s for 5/4 decking (1" actual) — stiffness goes as thickness cubed, so it more than doubles for about $25. Keep the gaps under 3" whatever you use.'],
     ['Tip-over', '—', 'The body is ' + inch(D.ROOF) + ' tall now — a bit above waist height on an adult. Still far more stable than a loft because all the mass is low, but strap it to studs.'],
   ];
 }
@@ -2023,8 +2023,8 @@ function STEPS() {
   return [
     ['Cut the frame', 'Four 2x6 legs at 19 1/2", two 2x6 side rails at 77 1/2", two 2x6 end rails at 38 1/2". Now set a dado stack or a router with a straight bit to take exactly 3/4" and DO NOT MOVE IT until every notch is cut. First the legs: over the top 5 1/2" of each, take the thickness from 1 1/2" down to 3/4" across the full 5 1/2" width. Then the end rails: same 3/4" depth, but only 4" long, taken off the OUTER face at each end. Test one leg against one rail end before you cut the rest — together they must come out flush at 1 1/2". Sand every edge with a 1/4" roundover bit or 80 grit; nothing on this bed should be sharp.'],
     ['Assemble the box', 'Stand the two legs of one end and lower the 38 1/2" end rail so its rebates drop over the leg lips. It should land on the 3/4 x 4 shoulders with the tongues filling the outside, dead flush. That lip is what carries the bed, so glue it, then two 3 1/2" screws down through the rail into each lip and two more driven sideways through each tongue. Do the other end the same way. Each corner now has a 3/4 x 1 1/2 patch of lip still uncovered — that is where the 77 1/2" side rails land. Glue them on, screw down into the lip and sideways into the end rail, and check the diagonals match before anything sets.'],
-    ['Cleats and slats', 'Glue and screw the 2x2 cleats to the inside faces of the MAIN side rails, top edge at 15 1/2". Drop in 14 slats with 2 1/16" gaps and screw each one down.'],
-    ['Build the trundle', '75 x 37 box of 2x4 on edge, 6 locking casters. Then the important bit: the 13 slats do NOT go on top of the rails. Glue and screw a 72" 2x2 cleat inside each side rail, flush with the BOTTOM edge, and land the slats on that — the deck ends up at ' + inch(D.T_DECK) + ' instead of ' + inch(D.CASTER_H + D.T_RAIL_H + D.SLAT_T) + ', which is what lets an 8" mattress live in the same bay. The 1 1/4" of rail still standing proud of the slats becomes a lip that keeps the mattress aboard when the drawer rolls. Paint the whole thing black now, before it goes under the bed. Roll it in and check you have 1 3/4" of daylight over the mattress.'],
+    ['Cleats and slats', 'Glue and screw the 2x2 cleats to the inside faces of the MAIN side rails, top edge at 15 1/2". Drop in 17 1x3 slats with ' + inch(D.GAP_S) + ' gaps and screw each one down.'],
+    ['Build the trundle', 'Two 75" 2x4 side rails on edge and 6 locking casters — there are no end rails, because a 2x4 standing at each end would cost 3" of a 75" trundle and a twin mattress is 75" long. Instead a 3/4" ply plate 36 x 6 lies flat at each end IN the slat plane and squares the whole thing. Then the important bit: the 13 slats do NOT go on top of the rails. Glue and screw a full-length 75" 2x2 cleat inside each side rail, flush with the BOTTOM edge, and land the slats and both end plates on that — the deck ends up at ' + inch(D.T_DECK) + ' instead of ' + inch(D.CASTER_H + D.T_RAIL_H + D.SLAT_T) + ', which is what lets an 8" mattress live in the same bay. The 1 1/4" of rail still standing proud of the slats becomes a lip that keeps the mattress aboard when the drawer rolls. Paint the whole thing black now, before it goes under the bed. Roll it in and check you have 1 3/4" of daylight over the mattress.'],
     ['Cut the body panels', 'This is the big one. Each side panel is ONE piece 79 long x 48 tall — the FULL width of a 4x8 sheet, so it takes a sheet of its own and you only cut three sides. Set it out full size from Fig 6: hood deck at ' + inch(D.HOOD) + ' running back to station ' + D.WS_X0 + ', A-pillar raking from (' + D.WS_X0 + ',' + D.HOOD + ') up to (' + D.WS_X1 + ',' + D.ROOF + '), roof rail flat at ' + inch(D.ROOF) + ' to the tail, rear edge straight down. Two openings, both in the SIDE: the doors-off aperture at x' + D.DOOR_X0 + '-' + D.DOOR_X1 + ' and the rear quarter window at x' + (D.DOOR_X1 + D.BPIL_W) + '-' + D.QTR_X + '. Drill 1/2" holes in their corners and jigsaw them out — and KEEP the door drop-out, there is a 20" tire disc in it. Cut ONE panel, clean every edge, then use it as a router template for the second so the pair are identical. Round every outside corner and every opening corner.'],
     ['Grill', 'The backer and the face are now the SAME outline, 43 x 20 with 2 1/2" corners, so cut the backer first and use it as a router template for the face and the two are guaranteed to line up. Cut the nine holes in the face only. Paint the backer black — strictly you only need black behind the nine holes, but rolling the whole thing is faster and you will never see the rest. Paint the face body colour. Glue and clamp the two together; this pair never comes apart again, it is one sub-assembly. Because nothing frames the grill, take your time sanding the two edges flush after the glue-up — that seam is the only thing that would give the two layers away.'],
     ['Threaded inserts', 'Do this before anything is painted. Every joint that has to come apart later gets a 1/4"-20 knife-thread insert in the FRAMING and a clearance hole in the PANEL — ' + (state.wall ? 37 : 40) + ' of them, laid out from the schedule in the cut list. Clamp each panel in its final position, drill through the panel into the framing with the clearance bit, then take the panel off, open the frame hole out to the insert pilot size and drive the insert. Two 3/8" dowel pins per panel, glued into the frame only, do the locating. Drilling in place is the whole trick: it guarantees the holes line up, because they were made through each other.'],
@@ -2180,7 +2180,7 @@ function figFastFrame() {
   });
   s += rect(px(1.5), pz(1.5), D.INNER_L * S, D.CLEAT * S, 'bp-cleat');
   s += rect(px(1.5), pz(D.FRAME_W - 3), D.INNER_L * S, D.CLEAT * S, 'bp-cleat');
-  const nS = 14, pitch = D.SLAT_W + D.GAP_S;
+  const nS = 17, pitch = D.SLAT_W + D.GAP_S;
   for (let i = 0; i < nS; i++)
     s += rect(px(1.5 + i * pitch), pz(1.5), D.SLAT_W * S, D.INNER_W * S, 'bp-slat');
 
@@ -2290,7 +2290,7 @@ function figFastTrundle() {
   s += rect(px(0), pz(D.T_W - 1.5), D.T_L * S, 1.5 * S, 'bp-black');
   s += rect(px(0), pz(1.5), 6 * S, D.T_INNER * S, 'bp-part');
   s += rect(px(D.T_L - 6), pz(1.5), 6 * S, D.T_INNER * S, 'bp-part');
-  const nT = 11, pitch = D.SLAT_W + D.GAP_T;
+  const nT = 13, pitch = D.SLAT_W + D.GAP_T;
   for (let i = 0; i < nT; i++)
     s += rect(px(6 + D.GAP_T + i * pitch), pz(1.5), D.SLAT_W * S, D.T_INNER * S, 'bp-slat');
 
@@ -2338,7 +2338,7 @@ function FASTEN() {
         'There is no fastener through the lip and there does not need to be one. The rails BEAR on it. Glue both faces, clamp the corner, and the joint is stronger in compression than any screw arrangement you could put there. This is also why the frame no longer uses a single bolt.'],
       ['D', '2x2 mattress cleat &rarr; side rail', '2 1/2" #8 wood screw', 20,
         '10 per cleat, one every 8", driven SIDEWAYS from inside the frame through the 1 1/2" cleat into the side rail. Do this before the slats go in, while you can still get a drill in there. Glue the cleat as well — it carries the whole mattress.'],
-      ['E', 'Slat &rarr; cleat', '1 5/8" #8 wood screw', 28,
+      ['E', 'Slat &rarr; cleat', '1 5/8" #8 wood screw', 34,
         'One screw down through each end of each slat. NO glue on these: a slat is the one part that might ever need replacing, and one screw at each end is enough because the slat is in bearing on the cleat.'],
     ]],
     ['Body — bolts only, so the Jeep lifts off the frame', 'figFastBody', [
@@ -2370,7 +2370,7 @@ function FASTEN() {
         '6 per side, into both cleats, plus glue. These two 3/4" ply plates are the ONLY thing squaring the trundle — there is no end rail, because a 2x4 standing at each end would cost 3" and a twin mattress is 75" long in a 75" trundle. Check the diagonals before you drive the last screw; the trundle has 1/2" of slop at each leg and it will bind if it is out.'],
       ['T', '2x2 cleat &rarr; trundle rail', '2 1/2" #8 wood screw', 14,
         '7 per cleat, every 12", sideways through the cleat into the rail, plus glue. The cleat runs the full 75" now. Dropping the slats onto a cleat INSIDE the rail instead of on top of it is what buys the extra 2" of mattress.'],
-      ['U', 'Trundle slat &rarr; cleat', '1 5/8" #8 wood screw', 22,
+      ['U', 'Trundle slat &rarr; cleat', '1 5/8" #8 wood screw', 26,
         'One at each end, no glue, same as the main slats.'],
       ['V', 'Locking caster &rarr; rail', '3/4" pan head (usually supplied)', 24,
         '4 per caster, 6 casters. Put the two LOCKING casters at the open end where you can reach the levers with your foot. If the supplied screws are shorter than 3/4", buy #8 x 3/4" — a 2x4 on edge gives you plenty of meat.'],
